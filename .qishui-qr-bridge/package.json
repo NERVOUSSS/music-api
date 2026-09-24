@@ -1,0 +1,12 @@
+{
+  "name": "music-api-qishui-qr-bridge",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local Electron bridge for Qishui Music account authorization",
+  "license": "GPL-3.0-only",
+  "main": "bridge-server.js",
+  "dependencies": {
+    "electron": "42.4.1",
+    "qrcode": "1.5.4"
+  }
+}

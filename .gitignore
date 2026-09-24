@@ -1,0 +1,26 @@
+# Runtime data: accounts, sessions, cookies, tokens, playlists and logs
+data/*
+!data/.gitkeep
+
+# Local Python and Node environments
+.venv/
+.npm-cache/
+.ncm-qr-adapter/
+__pycache__/
+*.py[cod]
+
+# Local logs and backup files
+*.log
+*.bak*
+
+# Editor and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Qishui Electron runtime and persisted authorization state
+.qishui-qr-bridge/node_modules/
+data/qishui-electron-user-data/
+data/.qishui-qr-login.json
+electron-v42.4.1-win32-x64.zip

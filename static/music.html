@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>声屿音乐</title>
+  <link rel="stylesheet" href="/static/music.css?v=20260917-online-presence">
+</head>
+<body>
+  <main class="app-shell">
+    <div class="mobile-sidebar-backdrop" id="mobile-sidebar-backdrop" hidden></div>
+    <aside class="sidebar" id="primary-sidebar" aria-label="音乐导航">
+      <a class="brand" href="/music" aria-label="声屿音乐首页"><span class="brand-mark" aria-hidden="true">&#9835;</span><span>声屿音乐</span></a>
+      <nav>
+        <button class="nav-item active" data-view="discover"><span><i class="nav-icon" aria-hidden="true">⌕</i>发现音乐</span></button>
+        <button class="nav-item" data-view="daily"><span><i class="nav-icon" aria-hidden="true">✦</i>每日推荐</span></button>
+        <button class="nav-item" data-view="daily-playlists"><span><i class="nav-icon" aria-hidden="true">☰</i>每日歌单</span></button>
+        <button class="nav-item" data-view="liked"><span><i class="nav-icon" aria-hidden="true">♡</i>我喜欢的音乐</span><b id="liked-count">0</b></button>
+        <button class="nav-item" data-view="accounts"><span><i class="nav-icon" aria-hidden="true">◉</i>账户</span></button>
+      </nav>
+      <div class="playlist-section">
+        <div class="playlist-section-head"><span>我的歌单</span><button id="new-playlist" title="新建歌单">＋</button></div>
+        <div id="playlist-nav"></div>
+        <div class="playlist-tools">
+          <button id="import-link-playlist">粘贴链接</button>
+          <button id="import-playlist">导入 JSON</button>
+          <input id="playlist-file" type="file" accept=".json,application/json" hidden>
+        </div>
+      </div>
+      <a href="/admin" class="settings-link" id="admin-sidebar-link" hidden>音源与服务配置</a>
+    </aside>
+    <section class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu-button" id="mobile-menu-button" type="button" aria-controls="primary-sidebar" aria-expanded="false" title="打开导航菜单"><span aria-hidden="true">☰</span><span class="sr-only">打开导航菜单</span></button>
+        <div class="topbar-title"><span class="topbar-dot"></span><span class="topbar-label">在线音乐</span><span class="online-presence" id="online-presence" title="最近 90 秒内保持连接的登录用户"><span>当前在线</span><b id="online-count">--</b><span>人</span></span></div>
+        <div class="account-actions">
+          <span id="account-name" class="account-name"></span>
+          <button id="logout-button" class="logout-button" title="退出登录">退出</button>
+          <button class="settings-button" id="settings-button" title="连接设置"><span aria-hidden="true">⚙</span><span class="sr-only">连接设置</span></button>
+        </div>
+      </header>
+      <aside class="announcement-bar" id="announcement-bar" hidden aria-label="网站公告">
+        <span class="announcement-icon" aria-hidden="true">&#128227;</span>
+        <div class="announcement-viewport">
+          <div class="announcement-track" id="announcement-track"></div>
+        </div>
+      </aside>
+      <section class="content" id="discover-view">
+        <div class="hero">
+          <canvas id="hero-art" width="1600" height="720"></canvas>
+          <div class="hero-copy">
+            <p class="eyebrow">MUSIC SEARCH</p>
+            <h1>这一刻，听你想听。</h1>
+            <p>从公开音乐平台搜索，并按你的音源配置播放。</p>
+          </div>
+          <div class="search-panel">
+            <div class="source-switch">
+              <button class="source-tab active" data-source="netease">网易云音乐</button>
+              <button class="source-tab" data-source="qq">QQ 音乐</button>
+              <button class="source-tab" data-source="kugou">酷狗音乐</button>
+              <button class="source-tab" data-source="migu">咪咕音乐</button>
+              <button class="source-tab" data-source="qishui">汽水音乐</button>
+              <button class="source-tab" data-source="aggregate">聚合搜索</button>
+            </div>
+            <form class="search-box" id="search-form">
+              <input id="search-input" autocomplete="off" placeholder="搜索歌曲、歌手或专辑">
+              <button type="submit" title="搜索"><span aria-hidden="true">⌕</span><span class="sr-only">搜索</span></button>
+            </form>
+            <div class="search-panel-foot">
+              <button class="primary-button" id="hero-search">开始搜索</button>
+              <div class="playback-options"><label for="playback-source">播放回源</label><select id="playback-source"><option value="auto">自动回源</option><option value="native">官方优先</option></select></div>
+            </div>
+          </div>
+          <div class="hero-now"><span>正在准备</span><strong id="hero-song">等待一首歌</strong><small id="hero-artist">搜索后即可开始播放</small></div>
+        </div>
+        <div class="section-head"><div><p class="eyebrow">EXPLORE</p><h2 id="result-title">从一首歌开始</h2></div><span id="result-meta">输入关键词探索音乐</span></div>
+        <div id="state-panel" class="state-panel">在上方搜索框输入你想听的歌。</div>
+        <div class="track-table" id="track-table" hidden>
+          <div class="track-row track-heading"><span></span><span>歌曲</span><span>专辑</span><span>时长</span><span></span></div>
+          <div id="track-list"></div>
+        </div>
+      </section>
+      <section class="content" id="library-view" hidden>
+        <div class="section-head"><div><p class="eyebrow">COLLECTION</p><h2 id="library-title">我喜欢的音乐</h2></div><div class="library-actions"><button class="text-button" id="rename-playlist">重命名</button><button class="text-button playlist-search-toggle" id="playlist-search-toggle" type="button" aria-expanded="false" aria-controls="playlist-search-panel" title="搜索歌单内歌曲"><span aria-hidden="true">⌕</span><span>搜索</span></button><button class="text-button danger" id="delete-playlist">删除歌单</button></div></div>
+        <div class="playlist-search-panel" id="playlist-search-panel" hidden>
+          <label class="playlist-search-field" for="playlist-search-input"><span aria-hidden="true">⌕</span><span class="sr-only">搜索当前歌单中的歌曲或歌手</span><input id="playlist-search-input" type="search" autocomplete="off" placeholder="搜索歌曲或歌手"></label>
+          <span class="playlist-search-result" id="playlist-search-result" aria-live="polite"></span>
+          <button class="playlist-search-clear" id="playlist-search-clear" type="button" title="清空搜索"><span aria-hidden="true">×</span><span class="sr-only">清空搜索</span></button>
+        </div>
+        <div class="track-table"><div class="track-row track-heading"><span></span><span>歌曲</span><span>专辑</span><span>时长</span><span></span></div><div id="library-list"></div></div>
+      </section>
+      <section class="content daily-view" id="daily-view" hidden>
+        <div class="daily-hero">
+          <div><p class="eyebrow">DAILY MIX</p><h2>今日推荐</h2><p id="daily-description">每天一份随机热歌清单，适合从一首歌重新开始。</p></div>
+          <button class="text-button daily-refresh" id="daily-refresh" type="button" title="换一批推荐">换一批</button>
+        </div>
+        <div class="track-table"><div class="track-row track-heading"><span></span><span>歌曲</span><span>专辑</span><span>时长</span><span></span></div><div id="daily-list"></div></div>
+      </section>
+      <section class="content daily-view daily-playlist-view" id="daily-playlists-view" hidden>
+        <div class="daily-hero">
+          <div><p class="eyebrow">DAILY LISTS</p><h2>每日歌单</h2><p id="daily-playlist-description">每天精选网易云音乐与 QQ 音乐的公开歌单，换个心情整张听。</p></div>
+          <button class="text-button daily-refresh" id="daily-playlist-refresh" type="button" title="换一批歌单">换一批</button>
+        </div>
+        <div class="playlist-card-grid" id="daily-playlist-grid"></div>
+        <div class="daily-playlist-detail" id="daily-playlist-detail" hidden>
+          <div class="section-head">
+            <div><p class="eyebrow" id="daily-playlist-detail-meta">PLAYLIST</p><h2 id="daily-playlist-detail-title">歌单</h2></div>
+            <div class="library-actions"><button class="text-button" id="daily-playlist-play-all">播放全部</button><button class="text-button" id="daily-playlist-save">收藏到我的歌单</button><button class="text-button" id="daily-playlist-close">返回歌单列表</button></div>
+          </div>
+          <div class="track-table"><div class="track-row track-heading"><span></span><span>歌曲</span><span>专辑</span><span>时长</span><span></span></div><div id="daily-playlist-tracks"></div></div>
+        </div>
+      </section>
+      <section class="content accounts-view" id="accounts-view" hidden>
+        <div class="section-head"><div><p class="eyebrow">ACCOUNTS</p><h2>账户与歌单同步</h2></div><span id="accounts-meta">连接音乐平台后，同步歌单到本账户</span></div>
+        <div class="accounts-note">第三方会话仅用于读取你自己的歌单，并以服务器加密形式保存。同步后的歌曲仍由声屿音乐当前可用的搜索与播放音源解析。</div>
+        <div class="accounts-grid" id="accounts-grid"></div>
+      </section>
+    </section>
+  </main>
+  <section class="player" aria-label="播放控制">
+    <div class="player-track">
+      <button class="player-now-trigger" id="now-playing-trigger" type="button" title="打开正在播放">
+        <span class="cover" id="player-cover">S</span>
+        <span class="player-copy"><strong id="player-title">还没有正在播放的歌曲</strong><span id="player-artist">从搜索结果中选择一首歌</span></span>
+      </button>
+      <button class="like-button icon-button" id="like-button" type="button" title="喜欢"><span aria-hidden="true">♡</span><span class="sr-only">喜欢</span></button>
+      <button class="add-button icon-button" id="player-add" type="button" title="加入歌单"><span aria-hidden="true">＋</span><span class="sr-only">加入歌单</span></button>
+    </div>
+    <div class="player-controls">
+      <div class="player-control-buttons">
+        <button class="mode-button" id="shuffle-button" type="button" title="随机播放"><span aria-hidden="true">⤨</span><span class="sr-only">随机播放</span></button>
+        <button id="previous-button" type="button" title="上一首"><span aria-hidden="true">⏮</span><span class="sr-only">上一首</span></button>
+        <button class="play-button" id="play-button" type="button" title="播放"><span class="control-symbol" aria-hidden="true">▶</span><span class="sr-only">播放</span></button>
+        <button id="next-button" type="button" title="下一首"><span aria-hidden="true">⏭</span><span class="sr-only">下一首</span></button>
+        <button class="mode-button loop-mode-button" id="repeat-list-button" type="button" title="列表循环"><span class="loop-list-icon" aria-hidden="true">↻</span><span class="sr-only">列表循环</span></button>
+        <button class="mode-button loop-mode-button" id="repeat-one-button" type="button" title="单曲循环"><span class="loop-one-icon" aria-hidden="true">↻<b>1</b></span><span class="sr-only">单曲循环</span></button>
+        <button class="queue-button" id="queue-button" type="button" title="打开播放列表"><span aria-hidden="true">☷</span><span class="sr-only">打开播放列表</span></button>
+      </div>
+      <div class="progress"><span id="current-time">0:00</span><input id="progress-input" aria-label="播放进度" type="range" min="0" max="100" value="0"><span id="duration-time">0:00</span></div>
+    </div>
+    <div class="player-extra"><button class="quality-label" id="source-label" type="button">网易云</button><button class="quality-label lyrics-window-button" id="lyrics-window-button" type="button" title="打开网页内悬浮歌词"><span aria-hidden="true">♫</span><span>歌词</span></button><label class="player-quality-control"><span>音质</span><span class="player-quality-picker"><button id="player-quality-trigger" class="player-quality-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="player-quality-menu"><span id="player-quality-value">320k</span><span class="player-quality-chevron" aria-hidden="true">⌄</span></button><span id="player-quality-menu" class="player-quality-menu" role="listbox" aria-label="选择播放音质" hidden></span><select id="player-quality" aria-hidden="true" tabindex="-1"><option value="128k">128k</option><option value="320k">320k</option><option value="flac">FLAC</option><option value="hires">Hi-Res</option></select></span></label><label><span>音量</span><input id="volume-input" aria-label="音量" type="range" min="0" max="100" value="80"></label></div>
+    <audio id="audio" preload="auto" playsinline></audio>
+    <audio id="audio-b" preload="auto" playsinline></audio>
+  </section>
+  <section class="queue-panel" id="queue-panel" hidden aria-label="播放列表">
+    <header class="queue-panel-head">
+      <div><strong>播放列表</strong><span id="queue-count">0 首歌曲</span></div>
+      <button class="queue-close icon-button" id="queue-close" type="button" title="最小化播放列表"><span aria-hidden="true">−</span><span class="sr-only">最小化播放列表</span></button>
+    </header>
+    <div class="queue-list" id="queue-list"><p class="queue-empty">当前播放列表为空</p></div>
+    <footer class="queue-panel-foot">
+      <span id="queue-source">等待播放</span>
+      <button id="queue-clear" type="button">清空队列</button>
+    </footer>
+  </section>
+  <section class="now-playing-view" id="now-playing-view" hidden aria-label="正在播放">
+    <header class="now-playing-top">
+      <button class="now-close icon-button" id="now-close" type="button" title="返回"><span aria-hidden="true">←</span><span class="sr-only">返回</span></button>
+      <span class="now-playing-kicker">正在播放</span>
+      <span class="now-playing-source" id="now-source">等待选择歌曲</span>
+      <button class="now-queue-button icon-button" id="now-queue-button" type="button" title="播放列表"><span aria-hidden="true">☷</span><span class="sr-only">播放列表</span></button>
+    </header>
+    <div class="now-playing-layout">
+      <div class="record-stage">
+        <div class="record-disc">
+          <div class="record-groove groove-one"></div>
+          <div class="record-groove groove-two"></div>
+          <div class="now-playing-cover" id="now-playing-cover">S</div>
+        </div>
+        <p class="record-caption">声屿音乐</p>
+      </div>
+      <section class="now-playing-detail">
+        <div class="now-song-heading">
+          <p class="now-song-overline" id="now-album">音乐播放器</p>
+          <h1 id="now-title">还没有正在播放的歌曲</h1>
+          <p id="now-artist">从搜索结果中选择一首歌</p>
+        </div>
+        <div class="now-actions">
+          <button class="now-action" id="now-like" type="button"><span aria-hidden="true">♡</span><span>喜欢</span></button>
+          <button class="now-action" id="now-add" type="button"><span aria-hidden="true">＋</span><span>加入歌单</span></button>
+        </div>
+        <div class="lyrics-panel">
+          <div class="lyrics-panel-head"><span>歌词</span><span id="lyrics-status">等待播放</span></div>
+          <div class="lyrics-list" id="now-lyrics" aria-live="polite"><p class="lyrics-empty">播放歌曲后将在这里显示歌词</p></div>
+        </div>
+        <div class="now-player-controls">
+          <div class="now-progress"><span id="now-current-time">0:00</span><input id="now-progress-input" aria-label="播放进度" type="range" min="0" max="100" value="0"><span id="now-duration-time">0:00</span></div>
+          <div class="now-transport">
+            <button class="mode-button" id="now-shuffle-button" type="button" title="随机播放"><span aria-hidden="true">⤨</span><span class="sr-only">随机播放</span></button>
+            <button id="now-previous-button" type="button" title="上一首"><span aria-hidden="true">⏮</span><span class="sr-only">上一首</span></button>
+            <button class="now-play-button" id="now-play-button" type="button" title="播放"><span class="control-symbol" aria-hidden="true">▶</span><span class="sr-only">播放</span></button>
+            <button id="now-next-button" type="button" title="下一首"><span aria-hidden="true">⏭</span><span class="sr-only">下一首</span></button>
+            <button class="mode-button loop-mode-button" id="now-repeat-list-button" type="button" title="列表循环"><span class="loop-list-icon" aria-hidden="true">↻</span><span class="sr-only">列表循环</span></button>
+            <button class="mode-button loop-mode-button" id="now-repeat-one-button" type="button" title="单曲循环"><span class="loop-one-icon" aria-hidden="true">↻<b>1</b></span><span class="sr-only">单曲循环</span></button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+  <section class="inline-floating-lyrics" id="inline-floating-lyrics" hidden aria-live="polite" aria-label="悬浮歌词">
+    <div class="inline-lyrics-toolbar" id="inline-lyrics-toolbar" aria-label="歌词工具栏">
+      <span class="inline-lyrics-drag-handle" title="按住拖动歌词位置">⋮⋮</span>
+      <span class="inline-lyrics-meta" id="inline-lyrics-meta">等待播放歌曲</span>
+      <div class="inline-lyrics-actions">
+        <button id="inline-lyrics-offset-decrease" type="button" title="歌词慢 0.1 秒" aria-label="歌词慢 0.1 秒">−</button>
+        <span id="inline-lyrics-offset">0.0 秒</span>
+        <button id="inline-lyrics-offset-increase" type="button" title="歌词快 0.1 秒" aria-label="歌词快 0.1 秒">＋</button>
+        <button id="inline-lyrics-settings" type="button" title="歌词设置" aria-label="歌词设置">⚙</button>
+        <button id="inline-lyrics-lock" type="button" aria-pressed="false" title="锁定歌词位置">🔓</button>
+        <button id="inline-lyrics-close" type="button" title="关闭悬浮歌词" aria-label="关闭悬浮歌词">×</button>
+      </div>
+    </div>
+    <div class="inline-lyrics-content" id="inline-lyrics-content" title="按住可拖动歌词位置">
+      <p class="inline-lyrics-current" id="inline-lyrics-current">从播放栏点击“歌词”打开悬浮歌词</p>
+      <p class="inline-lyrics-next" id="inline-lyrics-next"></p>
+    </div>
+  </section>
+  <dialog id="inline-lyrics-settings-dialog"><form method="dialog" id="inline-lyrics-settings-form"><div class="dialog-head"><h2>悬浮歌词设置</h2><button value="cancel">关闭</button></div><label>歌词偏移（秒）<input id="inline-setting-offset" type="number" min="-10" max="10" step="0.1"><small>正数：歌词提前；负数：歌词延后。</small></label><label>字体<select id="inline-setting-font"><option value="system">系统默认</option><option value="microsoft-yahei">微软雅黑</option><option value="pingfang">苹方</option><option value="serif">衬线字体</option><option value="mono">等宽字体</option></select></label><label>字号 <output id="inline-setting-font-size-output">28px</output><input id="inline-setting-font-size" type="range" min="16" max="54" step="1"></label><div class="inline-lyrics-color-grid"><label>普通歌词颜色<input id="inline-setting-normal-color" type="color"></label><label>高亮歌词颜色<input id="inline-setting-active-color" type="color"></label></div><p>歌词始终位于本网页的最前层；普通网页不能覆盖其他应用或操作系统桌面。</p><div class="dialog-actions"><button type="button" id="inline-lyrics-reset-settings">恢复默认</button><button value="default">保存</button></div></form></dialog>  <dialog id="settings-dialog"><form method="dialog"><div class="dialog-head"><h2>连接设置</h2><button value="cancel">关闭</button></div><label>主题颜色<select id="theme-select"><option value="purple">紫夜主题</option><option value="sage">青绿珊瑚主题</option></select></label><label>API Key<input id="api-key-input" type="password" placeholder="未设置可留空"></label><p>服务地址使用当前页面所在地址。音源和 Cookie 由管理员统一配置。</p><div class="dialog-actions"><a href="/admin" id="admin-settings-link" hidden>打开管理后台</a><button value="default" id="save-settings">保存</button></div></form></dialog>
+  <dialog id="playlist-dialog"><form id="playlist-form" method="dialog"><div class="dialog-head"><h2>加入歌单</h2><button value="cancel">关闭</button></div><label>选择歌单<select id="playlist-select"></select></label><div class="dialog-actions"><button value="default">加入</button></div></form></dialog>
+  <dialog id="name-dialog"><form id="name-form" method="dialog"><div class="dialog-head"><h2 id="name-dialog-title">新建歌单</h2><button value="cancel">关闭</button></div><label>歌单名称<input id="playlist-name-input" maxlength="60" required></label><div class="dialog-actions"><button value="default">确定</button></div></form></dialog>
+  <dialog id="account-connect-dialog"><form id="account-connect-form"><div class="dialog-head"><h2 id="account-connect-heading">连接音乐账户</h2><button type="button" value="cancel" id="close-account-connect">关闭</button></div><p id="account-connect-help">请完成授权后连接账户。</p><label class="account-password-field" hidden>账号<input id="account-connect-username" autocomplete="username"></label><label class="account-password-field" hidden>密码<input id="account-connect-password" type="password" autocomplete="current-password"></label><label class="account-cookie-field">会话 Cookie<textarea id="account-connect-cookie" rows="5" placeholder="粘贴已登录网页导出的完整 Cookie"></textarea></label><p class="account-connect-tip">不会保存第三方明文密码。建议先使用“扫码登录”完成官方授权，再粘贴该平台的会话 Cookie。</p><div class="dialog-actions"><button id="account-connect-submit" type="submit">保存连接</button></div></form></dialog>
+    <dialog id="account-qr-dialog"><form method="dialog"><div class="dialog-head"><h2 id="account-qr-title">&#32593;&#26131;&#20113;&#38899;&#20048;&#25195;&#30721;&#30331;&#24405;</h2><button type="button" id="account-qr-close">&#20851;&#38381;</button></div><div class="account-qr-body"><img id="account-qr-image" alt="&#32593;&#26131;&#20113;&#38899;&#20048;&#30331;&#24405;&#20108;&#32500;&#30721;"><p id="account-qr-status">&#35831;&#20351;&#29992;&#32593;&#26131;&#20113;&#38899;&#20048; App &#25195;&#30721;&#24182;&#30830;&#35748;&#25480;&#26435;</p></div><div class="dialog-actions"><button type="button" id="account-qr-refresh">&#21047;&#26032;&#20108;&#32500;&#30721;</button></div></form></dialog>  <dialog id="import-link-dialog"><form id="import-link-form"><div class="dialog-head"><h2>导入分享歌单</h2><button type="button" value="cancel" id="close-import-link">关闭</button></div><label>歌单分享链接<input id="import-link-input" type="url" inputmode="url" autocomplete="url" placeholder="粘贴网易云、QQ、酷狗、酷我或汽水歌单链接" required></label><label>本地歌单名称（可选）<input id="import-link-name" maxlength="60" placeholder="默认使用远端歌单名称"></label><p>支持五个平台的公开歌单。汽水音乐使用公开分享页曲目信息导入；再次导入同一链接时，会将新增歌曲同步到已有本地歌单。</p><div class="dialog-actions"><button id="import-link-submit" type="submit">导入</button></div></form></dialog>
+  <script src="/static/music.js?v=20260917-manual-pause-fix"></script>
+</body>
+</html>
+
+
