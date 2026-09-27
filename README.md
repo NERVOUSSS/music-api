@@ -66,38 +66,9 @@ GET /api/wxmusic?source=migu&keyword=歌名&key=你的_API_Key
 
 上传或添加第三方音源前，应确认来源合法，并遵守对应平台的服务条款和版权规定。项目不会因为添加音源而绕过歌曲的会员、地区或版权限制。
 
-## 数据与安全
+部署到新服务器后，需要重新注册账号并重新配置各平台授权。
 
-`data/` 中保存的是部署实例的个人运行数据，不能提交到 GitHub。发布版本只保留：
-
-```text
-data/.gitkeep
-```
-
-部署到新服务器后，需要重新注册账号并重新配置各平台授权。不要把以下内容提交到公开仓库：
-
-- 用户密码数据和登录会话
-- 音乐平台 Cookie、Token、API Key
-- 用户歌单、收藏和绑定账号
-- `.venv/`、`.ncm-qr-adapter/`、`node_modules/`
-- 日志、备份文件和缓存文件
-
-项目中的 `.gitignore` 已经配置了这些运行数据和本地依赖的忽略规则。若历史提交中曾经包含过密码、Cookie 或 Token，仅删除当前文件还不够，还需要清理 Git 历史并更换相关凭据。
-
-## GitHub 发布与部署
-
-可以直接上传当前源码目录，或在 GitHub 上创建仓库后执行：
-
-```bash
-git init
-git add .
-git commit -m "初始化音乐平台项目"
-git branch -M main
-git remote add origin <你的仓库地址>
-git push -u origin main
-```
-
-其他人克隆项目后，按照上面的 Windows 或 Linux 启动步骤安装依赖即可。每个部署环境都会拥有独立的用户、授权和配置数据。
+克隆项目后，按照上面的 Windows 或 Linux 启动步骤安装依赖即可。每个部署环境都会拥有独立的用户、授权和配置数据。
 
 ## 主要目录
 
